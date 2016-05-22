@@ -10,6 +10,11 @@ public class TextBlurb : MonoBehaviour {
 	/// text objects.
 	/// </summary>
 	[SerializeField]private bool m_isDriver = false;
+	[SerializeField]private string m_specificLock = "";
+	[SerializeField]private bool m_providesGenericKey = false;
+	[SerializeField]private string m_key = "";
+
+	[SerializeField]private bool m_requiresGenericLock;
 
 	[SerializeField]private string m_string = "";
 	[SerializeField]private Text m_text;
@@ -28,6 +33,7 @@ public class TextBlurb : MonoBehaviour {
 	private float m_XStart = 0.0f;
 	private int m_ghostsSpawned = 0;
 	private TextBlurb m_parent;
+
 
 
 	private bool m_completed = false;
@@ -143,7 +149,14 @@ public class TextBlurb : MonoBehaviour {
 	}
 
 	private bool HasKeys(){
-		return true;
+		bool hasKey = false;
+		if (m_requiresGenericLock) {
+			hasKey = LockManager.HasGenericKey () && LockManager.HasKey (m_specificLock);
+		} else {
+			hasKey = LockManager.HasKey (m_specificLock);
+		}
+		return hasKey;
+
 	}
 
 	public void Enable(TextBlurb parent){
@@ -176,6 +189,13 @@ public class TextBlurb : MonoBehaviour {
 	/// Activates the next set of nodes and disables this one.
 	/// </summary>
 	private void ActivateNextNode(){
+		if (m_providesGenericKey) {
+			LockManager.UnlockKeyGeneric ();
+		}
+		if (m_key != "") {
+			LockManager.UnlockKeySpecific (m_key);
+		}
+
 		foreach (TextBlurb tb in m_nextNodes) {
 			tb.Enable (this);
 		}
