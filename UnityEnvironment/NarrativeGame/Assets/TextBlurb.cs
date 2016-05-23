@@ -24,8 +24,9 @@ public class TextBlurb : MonoBehaviour {
 
 	[SerializeField]private TextBlurb [] m_nextNodes;
 
-	private Queue<GhostWord> m_ghosts;
+	private GhostWord [] m_ghosts;
 
+	private bool m_active = false;
 	private int m_curWordTyping = 0;
 	private int m_curLetterTyping = 0;
 	private float c_textCharWidth = 10.0f;
@@ -34,6 +35,7 @@ public class TextBlurb : MonoBehaviour {
 	private int m_ghostsSpawned = 0;
 	private TextBlurb m_parent;
 
+	private bool m_deleteLastLetter = false;
 
 
 	private bool m_completed = false;
@@ -57,9 +59,9 @@ public class TextBlurb : MonoBehaviour {
 
 
 	void Start () {
-		m_ghosts = new Queue<GhostWord> ();
-		m_XStart = 0;
+		m_XStart = transform.position.x;
 		m_words = ParseText (m_string);
+		m_ghosts = new GhostWord[m_words.Length];
 		if (m_isDriver == true) {
 			StartCoroutine (WriteWordsByInput());
 		}
@@ -76,36 +78,59 @@ public class TextBlurb : MonoBehaviour {
 	}
 
 	void Update(){
+
 		//Check to see if our next key is pressed
-		if (m_completed == false) {
-			m_nextKeyPressed = Input.GetKeyDown (NextKeyCode ());
+		if (m_completed == false && Input.anyKeyDown) {
+			if (Input.GetKeyDown (NextKeyCode ())) {
+				m_nextKeyPressed = true;
+			} else {
+				if(Input.GetKeyDown (KeyCode.Space)){
+					//TODO: any sound effect for typing, only accept one space press
+				}
+				else if (!(Input.GetKeyDown(KeyCode.LeftArrow))&& !(Input.GetKeyDown(KeyCode.RightArrow))&& !(Input.GetKeyDown(KeyCode.UpArrow))&& !(Input.GetKeyDown(KeyCode.DownArrow))) {
+					m_deleteLastLetter = true;
+				}
+			}
 		}
 	}
 
 	private void InstantiateGhosts(){
+		Debug.Log (100);
 		//Instantiate the first x words
 		StartCoroutine (KickoffGhosts ());
 
 	}
 
-	private IEnumerator KickoffGhosts(){
+	private void SpawnCurrentGhost(){
+		if (m_curWordTyping < m_ghosts.Length && m_ghosts [m_curWordTyping] == null) {
+			Vector3 newPos = new Vector3 (m_XStart + m_curWordTyping * c_textCharWidth, transform.position.y, transform.position.z);
+			GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
+			gw.GetComponent<GhostWord> ().SetPosition (newPos);
 
-		int wordsToReveal = (int) Random.Range(m_minWordsRevealed, m_maxWordsRevealed) - curGhosts;
-		float opacity = 1.0f;
-		for (int i = m_ghostsSpawned; i < m_ghostsSpawned + wordsToReveal && i < m_words.Length; i++) {
-			Vector3 newPos = new Vector3 (m_XStart, transform.position.y,transform.position.z);
-			GameObject gw = (GameObject) GameObject.Instantiate (m_ghostWord,newPos,transform.rotation);
-			yield return new WaitForSeconds (.1f);
-			gw.GetComponent<GhostWord>().SetPosition (newPos);
-			yield return new WaitForEndOfFrame ();
-			m_XStart += m_words [i].Length * c_textCharWidth;
-
-			m_ghosts.Enqueue (gw.GetComponent<GhostWord>());
-			gw.GetComponent<GhostWord>().SetWord (m_words [i],opacity);
+			m_ghosts [m_curWordTyping] = gw.GetComponent<GhostWord> ();
+			m_ghosts [m_curWordTyping].GetComponent<GhostWord> ().SetWord (m_words [m_curWordTyping], .8f);
 			curGhosts++;
-			opacity *= Random.Range (0.4f, 0.6f);
 		}
-		m_ghostsSpawned += wordsToReveal;
+	}
+
+	private IEnumerator KickoffGhosts(){
+		int wordsToReveal = (int) Random.Range(m_minWordsRevealed, m_maxWordsRevealed) - curGhosts;
+		Debug.Log ("KickoffGhosts: " + m_curWordTyping + " wordsToReveal: " + wordsToReveal + " curGhosts: " + curGhosts);
+		float opacity = 1.0f;
+		for (int i = m_curWordTyping; i < m_curWordTyping + wordsToReveal && i < m_words.Length; i++) {
+			if (m_ghosts [i] == null) {
+				Vector3 newPos = new Vector3 (m_XStart, transform.position.y, transform.position.z);
+				GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
+				yield return new WaitForSeconds (.1f);
+				gw.GetComponent<GhostWord> ().SetPosition (newPos);
+				yield return new WaitForEndOfFrame ();
+
+				m_ghosts [i] = (gw.GetComponent<GhostWord> ());
+				gw.GetComponent<GhostWord> ().SetWord (m_words [i], opacity);
+				curGhosts++;
+				opacity *= Random.Range (0.4f, 0.6f);
+			}
+		}
 	}
 	/// <summary>
 	/// Main driving coroutine for this prefab. Called when this blurb can be activated. Listens to input text and shows
@@ -114,6 +139,7 @@ public class TextBlurb : MonoBehaviour {
 	private IEnumerator WriteWordsByInput(){
 
 		//instantiate the following words
+		m_active = true;
 		InstantiateGhosts();
 		m_completed = false;
 		while (m_completed == false) {
@@ -123,25 +149,50 @@ public class TextBlurb : MonoBehaviour {
 			if (m_nextKeyPressed && m_curWordTyping < m_words.Length && m_completed == false) {
 
 				//write that char in the word	
-				m_text.text += "" + m_words[m_curWordTyping][m_curLetterTyping];
+				if (m_curLetterTyping < m_words [m_curWordTyping].Length) {
+					m_text.text += "" + m_words [m_curWordTyping] [m_curLetterTyping];
+				} else {
+					m_text.text += " ";
+				}
 				//move your position forward
 				m_curLetterTyping++;
 
-				if (m_curLetterTyping >= m_words [m_curWordTyping].Length) {
+				if (m_curLetterTyping >= m_words [m_curWordTyping].Length && m_curWordTyping < m_words.Length) {
 					m_curLetterTyping = 0;
+					GhostWord gw = m_ghosts[m_curWordTyping];
 					m_curWordTyping++;
-					GhostWord gw = m_ghosts.Dequeue ();
 					curGhosts--;
 					gw.FadeOut (this);
 
-					InstantiateGhosts ();
+					Debug.Log ("Fading out, curGhosts: " + curGhosts);
+					SpawnCurrentGhost ();
 					m_text.text += " ";
 					//move onto the next word
 				}
 
 				if (m_curWordTyping >= m_words.Length) {
 					ActivateNextNode ();
+					m_completed = true;
+				}
 
+				m_nextKeyPressed = false;
+			}else if (m_deleteLastLetter){
+				m_deleteLastLetter = false;
+				m_text.text = m_text.text.Substring (0, Mathf.Max (0, m_text.text.Length - 1));
+				m_curLetterTyping--;
+
+				Debug.Log ("m_curLetterTyping:" + m_curLetterTyping);
+				if (m_curLetterTyping <= 0 && m_curWordTyping <= 0) {
+					m_curLetterTyping = 0;
+					m_curWordTyping = 0;
+				}
+				else if (m_curLetterTyping < 0) {
+					m_curWordTyping--;
+					if (m_curWordTyping < 0) {
+						m_curWordTyping = 0;
+					}
+					m_curLetterTyping = m_words [m_curWordTyping].Length;
+					SpawnCurrentGhost ();
 				}
 			}
 
@@ -175,8 +226,7 @@ public class TextBlurb : MonoBehaviour {
 
 	public void DisableSelf(){
 		//kill all ghosts
-		while(m_ghosts.Count != 0){
-			GhostWord gw = m_ghosts.Dequeue ();
+		foreach(GhostWord gw in m_ghosts){
 
 			Destroy (gw.gameObject);
 		}
@@ -203,6 +253,7 @@ public class TextBlurb : MonoBehaviour {
 			m_parent.DisableChildren ();
 		}
 		m_completed = true;
+		m_active = false;
 	}
 
 	/// <summary>
@@ -211,8 +262,12 @@ public class TextBlurb : MonoBehaviour {
 	/// <returns>The key code for the next character in the string.</returns>
 	private string NextKeyCode(){
 		//Determine the next character
-		string nextChar = ""+ m_words[m_curWordTyping][m_curLetterTyping];
-
+		string nextChar;
+		if (m_curLetterTyping < m_words [m_curWordTyping].Length) {
+			nextChar = "" + m_words [m_curWordTyping] [m_curLetterTyping];
+		} else {
+			nextChar = "space";
+		}
 		//Compare the next character to all available keycodes, return that character
 
 		return (string)nextChar.ToLower();
