@@ -21,8 +21,8 @@ public class GhostWord : MonoBehaviour {
 	
 	}
 
-	public void FadeOut(MonoBehaviour CoroutineMaster){
-		CoroutineMaster.StartCoroutine (FadeOutRoutine ());
+	public void FadeOut(){
+		StartCoroutine (FadeOutRoutine ());
 	}
 
 	private IEnumerator FadeOutRoutine(){

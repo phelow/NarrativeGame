@@ -102,7 +102,10 @@ public class TextBlurb : MonoBehaviour {
 	}
 
 	private void SpawnCurrentGhost(){
-		if (m_curWordTyping < m_ghosts.Length && m_ghosts [m_curWordTyping] == null) {
+		if (m_curWordTyping < m_ghosts.Length) {
+			if (m_ghosts [m_curWordTyping] != null) {
+				Destroy (m_ghosts [m_curWordTyping].gameObject);
+			}
 			Vector3 newPos = new Vector3 (m_XStart + m_curWordTyping * c_textCharWidth, transform.position.y, transform.position.z);
 			GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
 			gw.GetComponent<GhostWord> ().SetPosition (newPos);
@@ -119,7 +122,7 @@ public class TextBlurb : MonoBehaviour {
 		float opacity = 1.0f;
 		for (int i = m_curWordTyping; i < m_curWordTyping + wordsToReveal && i < m_words.Length; i++) {
 			if (m_ghosts [i] == null) {
-				Vector3 newPos = new Vector3 (m_XStart, transform.position.y, transform.position.z);
+				Vector3 newPos = new Vector3 (m_XStart+ i * c_textCharWidth, transform.position.y, transform.position.z);
 				GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
 				yield return new WaitForSeconds (.1f);
 				gw.GetComponent<GhostWord> ().SetPosition (newPos);
@@ -162,7 +165,7 @@ public class TextBlurb : MonoBehaviour {
 					GhostWord gw = m_ghosts[m_curWordTyping];
 					m_curWordTyping++;
 					curGhosts--;
-					gw.FadeOut (this);
+					gw.FadeOut ();
 
 					Debug.Log ("Fading out, curGhosts: " + curGhosts);
 					SpawnCurrentGhost ();
@@ -187,6 +190,7 @@ public class TextBlurb : MonoBehaviour {
 					m_curWordTyping = 0;
 				}
 				else if (m_curLetterTyping < 0) {
+					Debug.Log ("190: calling spawn current ghost m_curLetterTyping:" + m_curLetterTyping);
 					m_curWordTyping--;
 					if (m_curWordTyping < 0) {
 						m_curWordTyping = 0;
@@ -227,8 +231,9 @@ public class TextBlurb : MonoBehaviour {
 	public void DisableSelf(){
 		//kill all ghosts
 		foreach(GhostWord gw in m_ghosts){
-
-			Destroy (gw.gameObject);
+			if (gw != null) {
+				Destroy (gw.gameObject);
+			}
 		}
 
 		//stop listening for input
