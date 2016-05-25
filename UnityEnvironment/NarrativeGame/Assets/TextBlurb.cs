@@ -23,8 +23,12 @@ public class TextBlurb : MonoBehaviour {
 	[SerializeField]private string [] m_words;
 
 	[SerializeField]private TextBlurb [] m_nextNodes;
+	[SerializeField]private float m_width = 3.0f;
+	[SerializeField]private float m_height = 3.0f;
 
 	private GhostWord [] m_ghosts;
+
+	[SerializeField]private float m_lineHeight = 1.0f;
 
 	private bool m_active = false;
 	private int m_curWordTyping = 0;
@@ -106,7 +110,7 @@ public class TextBlurb : MonoBehaviour {
 			if (m_ghosts [m_curWordTyping] != null) {
 				Destroy (m_ghosts [m_curWordTyping].gameObject);
 			}
-			Vector3 newPos = new Vector3 (m_XStart + m_curWordTyping * c_textCharWidth, transform.position.y, transform.position.z);
+			Vector3 newPos = new Vector3 (m_XStart + (m_curWordTyping%m_width * c_textCharWidth), transform.position.y - m_lineHeight *(m_curWordTyping/m_width), transform.position.z);
 			GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
 			gw.GetComponent<GhostWord> ().SetPosition (newPos);
 
@@ -122,7 +126,8 @@ public class TextBlurb : MonoBehaviour {
 		float opacity = 1.0f;
 		for (int i = m_curWordTyping; i < m_curWordTyping + wordsToReveal && i < m_words.Length; i++) {
 			if (m_ghosts [i] == null) {
-				Vector3 newPos = new Vector3 (m_XStart+ i * c_textCharWidth, transform.position.y, transform.position.z);
+				Vector3 newPos = new Vector3 (m_XStart+ (i%m_width * c_textCharWidth), transform.position.y - m_lineHeight *(i/m_width), transform.position.z);
+				Debug.Log ("newPos:" + newPos + " Mathf.Ceil(i/m_width):" + Mathf.Ceil(i/m_width) + "m_lineHeight: " + m_lineHeight);
 				GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
 				yield return new WaitForSeconds (.1f);
 				gw.GetComponent<GhostWord> ().SetPosition (newPos);
