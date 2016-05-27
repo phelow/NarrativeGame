@@ -46,12 +46,20 @@ public class TextBlurb : MonoBehaviour {
 
 	[SerializeField]private GameObject m_ghostSpawnPoint;
 
+	[SerializeField]private GameObject m_ghostLetter;
+
+	[SerializeField]private int m_minGhostLetters = 1;
+	[SerializeField]private int m_maxGhostLetters = 10;
+
 	int curGhosts = 0;
 
 
 	//These two variables determine how many words to show that have not yet been typed.
 	[SerializeField]private float m_minWordsRevealed;
 	[SerializeField]private float m_maxWordsRevealed;
+
+	[SerializeField]private float m_maxPositionalOffest = 3.0f;
+	[SerializeField]private float m_ghostCharWidth = 1.0f;
 
 	//A word that prompts the player to type it
 	[SerializeField]private GameObject m_ghostWord;
@@ -140,6 +148,7 @@ public class TextBlurb : MonoBehaviour {
 			}
 		}
 	}
+
 	/// <summary>
 	/// Main driving coroutine for this prefab. Called when this blurb can be activated. Listens to input text and shows
 	/// text as it unfolds.
@@ -156,6 +165,12 @@ public class TextBlurb : MonoBehaviour {
 			//If next char in the word is currently pressed
 			if (m_nextKeyPressed && m_curWordTyping < m_words.Length && m_completed == false) {
 
+				int numLetters = Random.Range (m_minGhostLetters, m_maxGhostLetters);
+				for(int i = 0; i < numLetters; i++){
+
+					Vector3 SpawnPos = new Vector3 (m_ghosts [m_curWordTyping].transform.position.x + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest) + m_ghostCharWidth *m_curLetterTyping, m_ghosts [m_curWordTyping].transform.position.y + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest), m_ghosts [m_curWordTyping].transform.position.z + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest));
+					((GameObject)GameObject.Instantiate(m_ghostLetter,SpawnPos,new Quaternion(0,0,0,0))).GetComponent<GhostLetter>().StartFalling(""+m_words[m_curWordTyping] [m_curLetterTyping]);
+				}
 				//write that char in the word	
 				if (m_curLetterTyping < m_words [m_curWordTyping].Length) {
 					m_text.text += "" + m_words [m_curWordTyping] [m_curLetterTyping];
