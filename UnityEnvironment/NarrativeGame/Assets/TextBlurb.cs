@@ -63,7 +63,7 @@ public class TextBlurb : MonoBehaviour {
 
 
 	void Start () {
-		m_XStart = transform.position.x;
+		m_XStart = m_text.transform.position.x;
 		m_words = ParseText (m_string);
 		m_ghosts = new GhostWord[m_words.Length];
 		if (m_isDriver == true) {
