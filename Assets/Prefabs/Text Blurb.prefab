@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_isDriver: 1
-  m_specificLock: 
+  m_acceptedLocks: []
   m_providesGenericKey: 0
   m_key: 
   m_requiresGenericLock: 0

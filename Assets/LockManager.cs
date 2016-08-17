@@ -33,8 +33,20 @@ public class LockManager : MonoBehaviour {
 		m_specificDictionaries [key] = Key.Acquired;
 	}
 
-	public static bool HasKey(string key){
-		return key == "" || m_specificDictionaries [key] == Key.Acquired;
+	public static bool HasKey(string [] locks){
+
+		if (locks.Length == 0) {
+			return true;
+		}
+
+		foreach (string l in locks) {
+			if (m_specificDictionaries [l] == Key.Acquired) {
+				return true;
+			}
+		}
+
+
+		return false;
 	}
 
 	public static bool HasGenericKey(){

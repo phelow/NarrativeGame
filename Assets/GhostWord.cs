@@ -9,8 +9,8 @@ public class GhostWord : MonoBehaviour {
 
 	[SerializeField]private float m_minLerpTime = 1.0f;
 	[SerializeField]private float m_maxLerpTime = 5.0f;
-
 	[SerializeField]private float m_maxDistFromCenter = 5.0f;
+
 	// Use this for initialization
 	void Start () {
 		m_text.color = Color.white;
@@ -65,7 +65,6 @@ public class GhostWord : MonoBehaviour {
 				transform.position = Vector3.Lerp (origPosition, newPosition, t/lerpTime);
 				yield return new WaitForEndOfFrame();
 			}
-
 
 			yield return new WaitForEndOfFrame();
 		}

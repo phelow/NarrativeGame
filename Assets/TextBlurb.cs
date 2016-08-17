@@ -10,7 +10,7 @@ public class TextBlurb : MonoBehaviour {
 	/// text objects.
 	/// </summary>
 	[SerializeField]private bool m_isDriver = false;
-	[SerializeField]private string m_specificLock = "";
+	[SerializeField]private string [] m_acceptedLocks;
 	[SerializeField]private bool m_providesGenericKey = false;
 	[SerializeField]private string m_key = "";
 
@@ -227,9 +227,9 @@ public class TextBlurb : MonoBehaviour {
 	private bool HasKeys(){
 		bool hasKey = false;
 		if (m_requiresGenericLock) {
-			hasKey = LockManager.HasGenericKey () && LockManager.HasKey (m_specificLock);
+			hasKey = LockManager.HasGenericKey () && LockManager.HasKey (m_acceptedLocks);
 		} else {
-			hasKey = LockManager.HasKey (m_specificLock);
+			hasKey = LockManager.HasKey (m_acceptedLocks);
 		}
 		return hasKey;
 
@@ -237,9 +237,15 @@ public class TextBlurb : MonoBehaviour {
 
 	public void Enable(TextBlurb parent){
 		m_parent = parent;
-		if (HasKeys()) {
-			StartCoroutine (WriteWordsByInput ());
+
+		StartCoroutine (WaitForKey ());
+	}
+
+	private IEnumerator WaitForKey(){
+		while (HasKeys () == false) {
+			yield return new WaitForEndOfFrame ();
 		}
+		StartCoroutine (WriteWordsByInput ());
 	}
 
 	public void DisableChildren(){
