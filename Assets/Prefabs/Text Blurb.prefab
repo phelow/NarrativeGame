@@ -190,9 +190,10 @@ MonoBehaviour:
   m_height: 1000
   m_lineHeight: 1
   m_ghostSpawnPoint: {fileID: 159486}
+  m_renderer: {fileID: 108090}
   m_ghostLetter: {fileID: 110086, guid: 8a39f13acd7fb2543b3507d62e34c919, type: 2}
   m_minGhostLetters: 1
-  m_maxGhostLetters: 10
+  m_maxGhostLetters: 3
   m_minWordsRevealed: 2
   m_maxWordsRevealed: 3
   m_maxPositionalOffest: 3

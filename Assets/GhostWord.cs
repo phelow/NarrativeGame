@@ -21,6 +21,10 @@ public class GhostWord : MonoBehaviour {
 	
 	}
 
+	public void LoseLetter(){
+		m_text.text = m_text.text.Substring (1, m_text.text.Length - 1);
+	}
+
 	public void FadeOut(){
 		StartCoroutine (FadeOutRoutine ());
 	}
