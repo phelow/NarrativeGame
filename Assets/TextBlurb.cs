@@ -160,15 +160,13 @@ public class TextBlurb : MonoBehaviour {
 		m_active = true;
 		InstantiateGhosts();
 		m_completed = false;
-		while (m_completed == false) {
+		while (m_curWordTyping < m_words.Length) {
 			yield return new WaitForEndOfFrame ();
 
 			//If next char in the word is currently pressed
-			if (m_nextKeyPressed && m_curWordTyping < m_words.Length && m_completed == false) {
-
-				int numLetters = Random.Range (m_minGhostLetters, m_maxGhostLetters);
+			if (m_nextKeyPressed) {
+				int numLetters = UnityEngine.Mathf.Max(Random.Range (m_minGhostLetters, m_maxGhostLetters),m_ghosts.Length);
 				for(int i = 0; i < numLetters; i++){
-
 					Vector3 SpawnPos = new Vector3 (m_ghosts [m_curWordTyping].transform.position.x + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest) + m_ghostCharWidth *m_curLetterTyping, m_ghosts [m_curWordTyping].transform.position.y + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest), m_ghosts [m_curWordTyping].transform.position.z + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest));
 					((GameObject)GameObject.Instantiate(m_ghostLetter,SpawnPos,new Quaternion(0,0,0,0))).GetComponent<GhostLetter>().StartFalling(""+m_words[m_curWordTyping] [m_curLetterTyping]);
 				}
@@ -178,10 +176,11 @@ public class TextBlurb : MonoBehaviour {
 				} else {
 					m_text.text += " ";
 				}
+
 				//move your position forward
 				m_curLetterTyping++;
 
-				if (m_curLetterTyping >= m_words [m_curWordTyping].Length && m_curWordTyping < m_words.Length) {
+				if (m_curLetterTyping >= m_words [m_curWordTyping].Length) {
 					m_curLetterTyping = 0;
 					GhostWord gw = m_ghosts[m_curWordTyping];
 					m_curWordTyping++;
@@ -194,34 +193,11 @@ public class TextBlurb : MonoBehaviour {
 					//move onto the next word
 				}
 
-				if (m_curWordTyping >= m_words.Length) {
-					ActivateNextNode ();
-					m_completed = true;
-				}
-
 				m_nextKeyPressed = false;
-			}else if (m_deleteLastLetter){
-				m_deleteLastLetter = false;
-				m_text.text = m_text.text.Substring (0, Mathf.Max (0, m_text.text.Length - 1));
-				m_curLetterTyping--;
-
-				Debug.Log ("m_curLetterTyping:" + m_curLetterTyping);
-				if (m_curLetterTyping <= 0 && m_curWordTyping <= 0) {
-					m_curLetterTyping = 0;
-					m_curWordTyping = 0;
-				}
-				else if (m_curLetterTyping < 0) {
-					Debug.Log ("190: calling spawn current ghost m_curLetterTyping:" + m_curLetterTyping);
-					m_curWordTyping--;
-					if (m_curWordTyping < 0) {
-						m_curWordTyping = 0;
-					}
-					m_curLetterTyping = m_words [m_curWordTyping].Length;
-					SpawnCurrentGhost ();
-				}
 			}
-
 		}
+
+		ActivateNextNode ();
 	}
 
 	private bool HasKeys(){
@@ -295,7 +271,7 @@ public class TextBlurb : MonoBehaviour {
 	private string NextKeyCode(){
 		//Determine the next character
 		string nextChar;
-		if (m_curLetterTyping < m_words [m_curWordTyping].Length) {
+		if (m_curWordTyping < m_words.Length && m_curLetterTyping < m_words [m_curWordTyping].Length) {
 			nextChar = "" + m_words [m_curWordTyping] [m_curLetterTyping];
 		} else {
 			nextChar = "space";
