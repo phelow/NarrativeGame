@@ -123,7 +123,7 @@ public class TextBlurb : MonoBehaviour {
 	}
 
 	private void SpawnCurrentGhost(){
-		if (m_curWordTyping <= m_ghosts.Length || m_ghosts[m_curWordTyping] == null) {
+		if (m_curWordTyping < m_ghosts.Length && (m_curWordTyping <= m_ghosts.Length || m_ghosts[m_curWordTyping] == null)) {
 			if (m_ghosts [m_curWordTyping] != null) {
 				Destroy (m_ghosts [m_curWordTyping].gameObject);
 			}
