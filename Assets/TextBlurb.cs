@@ -13,6 +13,7 @@ public class TextBlurb : MonoBehaviour {
 	[SerializeField]private string [] m_acceptedLocks;
 	[SerializeField]private bool m_providesGenericKey = false;
 	[SerializeField]private string m_key = "";
+	[SerializeField]private int m_wordsToCompletion = -1; //How many words we need to type to complete this text blurb
 
 	[SerializeField]private bool m_requiresGenericLock;
 
@@ -133,6 +134,12 @@ public class TextBlurb : MonoBehaviour {
 	}
 
 	private void SpawnCurrentGhost(){
+		for (int i = 0; i < m_curWordTyping; i++) {
+			if (m_ghosts [i] != null) {
+				Destroy (m_ghosts [i].gameObject);
+			}
+		}
+
 		if (m_curWordTyping < m_ghosts.Length && (m_curWordTyping <= m_ghosts.Length || m_ghosts[m_curWordTyping] == null)) {
 			if (m_ghosts [m_curWordTyping] != null) {
 				Destroy (m_ghosts [m_curWordTyping].gameObject);
@@ -164,6 +171,52 @@ public class TextBlurb : MonoBehaviour {
 		}
 	}
 
+	private IEnumerator WriteRemainingWords(){
+		while (m_curWordTyping < m_words.Length) {
+
+			int numLetters = UnityEngine.Mathf.Max (Random.Range (m_minGhostLetters, m_maxGhostLetters), m_ghosts.Length);
+			for (int i = 0; i < numLetters; i++) {
+				Vector3 SpawnPos = new Vector3 (m_ghosts [m_curWordTyping].transform.position.x + Random.Range (-m_maxPositionalOffest, m_maxPositionalOffest) + m_ghostCharWidth * m_curLetterTyping, m_ghosts [m_curWordTyping].transform.position.y + Random.Range (-m_maxPositionalOffest, m_maxPositionalOffest), m_ghosts [m_curWordTyping].transform.position.z + Random.Range (-m_maxPositionalOffest, m_maxPositionalOffest));
+
+				if (m_curLetterTyping < m_words [m_curWordTyping].Length) {
+					((GameObject)GameObject.Instantiate (m_ghostLetter, SpawnPos, new Quaternion (0, 0, 0, 0))).GetComponent<GhostLetter> ().StartFalling ("" + m_words [m_curWordTyping] [m_curLetterTyping]);
+				}
+			}
+			yield return new WaitForEndOfFrame ();
+			ms_backspace = false;
+
+			GhostWord gw = m_ghosts [m_curWordTyping];
+
+			//move your position forward
+
+			m_text.text = "";
+
+			for (int i = 0; i < m_curWordTyping; i++) {
+				m_text.text += m_words [i] + " ";
+			}
+
+			for(int i = 0; i < m_curLetterTyping; i++){
+				m_text.text += m_words[m_curWordTyping][i];
+			}
+			SpawnCurrentGhost ();
+
+			m_curLetterTyping++;
+			if (m_curLetterTyping >= m_words [m_curWordTyping].Length) {
+				m_curLetterTyping = 0;
+				m_curWordTyping++;
+				curGhosts--;
+				gw.FadeOut ();
+
+				Debug.Log ("Fading out, curGhosts: " + curGhosts);
+				SpawnCurrentGhost ();
+				m_text.text += " ";
+				//move onto the next word
+			}
+
+			m_nextKeyPressed = false;
+		}
+	}
+
 	/// <summary>
 	/// Main driving coroutine for this prefab. Called when this blurb can be activated. Listens to input text and shows
 	/// text as it unfolds.
@@ -179,6 +232,10 @@ public class TextBlurb : MonoBehaviour {
 		m_completed = false;
 		while (m_curWordTyping < m_words.Length) {
 			yield return new WaitForEndOfFrame ();
+			if (m_wordsToCompletion == m_curWordTyping) {
+				StartCoroutine (WriteRemainingWords ());
+				return true;
+			}
 
 			//If next char in the word is currently pressed
 			if (m_nextKeyPressed) {
@@ -198,6 +255,7 @@ public class TextBlurb : MonoBehaviour {
 				if (m_curLetterTyping >= m_words [m_curWordTyping].Length) {
 					m_curLetterTyping = 0;
 					m_curWordTyping++;
+
 					curGhosts--;
 					gw.FadeOut ();
 
