@@ -92,6 +92,14 @@ public class TextBlurb : MonoBehaviour {
 		return inputText.Split (delimiters);
 	}
 
+	public int GetCurrentWord(){
+		return m_curWordTyping;
+	}
+
+	public int GetCurrentLetter(){
+		return m_curLetterTyping;
+	}
+
 	void Update(){
 
 		//Check to see if our next key is pressed
@@ -110,8 +118,12 @@ public class TextBlurb : MonoBehaviour {
 		}
 	}
 
+	public TextBlurb [] GetNextNodes(){
+		return m_nextNodes;
+	}
+
 	private void SpawnCurrentGhost(){
-		if (m_curWordTyping < m_ghosts.Length) {
+		if (m_curWordTyping <= m_ghosts.Length || m_ghosts[m_curWordTyping] == null) {
 			if (m_ghosts [m_curWordTyping] != null) {
 				Destroy (m_ghosts [m_curWordTyping].gameObject);
 			}
@@ -120,7 +132,7 @@ public class TextBlurb : MonoBehaviour {
 			gw.GetComponent<GhostWord> ().SetPosition (newPos);
 
 			m_ghosts [m_curWordTyping] = gw.GetComponent<GhostWord> ();
-			m_ghosts [m_curWordTyping].GetComponent<GhostWord> ().SetWord (m_words [m_curWordTyping], .8f);
+			m_ghosts [m_curWordTyping].GetComponent<GhostWord> ().SetWord (m_words [m_curWordTyping], .8f,this,m_curWordTyping);
 			curGhosts++;
 		}
 	}
@@ -136,7 +148,7 @@ public class TextBlurb : MonoBehaviour {
 			gw.GetComponent<GhostWord> ().SetPosition (newPos);
 
 			m_ghosts [i] = (gw.GetComponent<GhostWord> ());
-			gw.GetComponent<GhostWord> ().SetWord (m_words [i], opacity);
+			gw.GetComponent<GhostWord> ().SetWord (m_words [i], opacity,this,i);
 			curGhosts++;
 			opacity *= Random.Range (0.4f, 0.6f);
 		}
@@ -169,7 +181,6 @@ public class TextBlurb : MonoBehaviour {
 
 
 				GhostWord gw = m_ghosts[m_curWordTyping];
-				gw.LoseLetter ();
 
 				//move your position forward
 				m_curLetterTyping++;
@@ -190,12 +201,21 @@ public class TextBlurb : MonoBehaviour {
 			}
 
 
-			if (ms_backspace) {
+			if (ms_backspace || m_deleteLastLetter) {
+				ms_backspace = false;
+				m_deleteLastLetter = false;
 				m_curLetterTyping--;
-				if (m_curLetterTyping == 0) {
-					m_curWordTyping--;
-					m_curLetterTyping = m_words [m_curWordTyping].Length;
+				if (m_curLetterTyping <= 0 && m_curWordTyping == 0) {
+					m_curLetterTyping = 0;
+					SpawnCurrentGhost ();
+					continue;
 				}
+
+				if (m_curLetterTyping <= 0) {
+					m_curWordTyping--;
+					m_curLetterTyping = m_words [m_curWordTyping].Length-1;
+				}
+				SpawnCurrentGhost ();
 			}
 
 			m_text.text = "";
@@ -207,7 +227,7 @@ public class TextBlurb : MonoBehaviour {
 			for(int i = 0; i < m_curLetterTyping; i++){
 				m_text.text += m_words[m_curWordTyping][i];
 			}
-			KickoffGhosts();
+			SpawnCurrentGhost ();
 		}
 
 		ActivateNextNode ();
@@ -291,8 +311,14 @@ public class TextBlurb : MonoBehaviour {
 	/// </summary>
 	/// <returns>The key code for the next character in the string.</returns>
 	private string NextKeyCode(){
+		if (m_curLetterTyping >= m_words [m_curWordTyping].Length || m_curLetterTyping < 0) {
+			return "(";
+		}
+
+
 		//Determine the next character
 		string nextChar;
+
 		if (m_curWordTyping < m_words.Length && m_curLetterTyping < m_words [m_curWordTyping].Length) {
 			nextChar = "" + m_words [m_curWordTyping] [m_curLetterTyping];
 		} else {

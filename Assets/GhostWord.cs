@@ -5,6 +5,10 @@ using System.Collections;
 public class GhostWord : MonoBehaviour {
 	[SerializeField]TextMesh m_text;
 
+	private string m_originalText;
+	private int m_textIndex;
+	private TextBlurb m_textBlurb;
+
 	Vector2 m_centralPosition;
 
 	[SerializeField]private float m_minLerpTime = 1.0f;
@@ -18,11 +22,20 @@ public class GhostWord : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-	
-	}
+		if (m_textBlurb.GetCurrentWord() > m_textIndex) {
+			return;
+		}
 
-	public void LoseLetter(){
-		m_text.text = m_text.text.Substring (1, m_text.text.Length - 1);
+		if (m_textBlurb.GetCurrentWord() < m_textIndex) {
+			m_text.text = m_originalText;
+			return;
+		}
+
+		if (m_textBlurb.GetCurrentLetter () < 0) {
+			return;
+		}
+		
+		m_text.text = m_originalText.Substring (m_textBlurb.GetCurrentLetter(),m_originalText.Length - m_textBlurb.GetCurrentLetter());
 	}
 
 	public void FadeOut(){
@@ -42,9 +55,11 @@ public class GhostWord : MonoBehaviour {
 		Destroy (this.gameObject);
 	}
 
-	public void SetWord(string newText, float opacity){
+	public void SetWord(string newText, float opacity, TextBlurb textBlurb, int textIndex){
 		m_text.text = newText;
-
+		m_originalText = newText;
+		m_textBlurb = textBlurb;
+		m_textIndex = textIndex;
 		m_text.color = new Color (1.0f, 1.0f, 1.0f, opacity);
 	}
 
