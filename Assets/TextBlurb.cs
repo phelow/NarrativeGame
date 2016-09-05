@@ -55,6 +55,7 @@ public class TextBlurb : MonoBehaviour {
 	[SerializeField]private int m_maxGhostLetters = 10;
 
 	int curGhosts = 0;
+	private bool m_nextKey = false;
 
 
 	//These two variables determine how many words to show that have not yet been typed.
@@ -103,8 +104,17 @@ public class TextBlurb : MonoBehaviour {
 	void Update(){
 
 		//Check to see if our next key is pressed
-		if (m_completed == false && Input.anyKeyDown) {
-			if (Input.GetKeyDown (NextKeyCode ())) {
+		if (m_completed == false && Input.anyKeyDown || m_nextKey) {
+			if ((NextKeyCode () == "." || NextKeyCode () == "," || NextKeyCode () == "?" || NextKeyCode () == "\'" )&& !Input.GetKeyDown(NextKeyCode())) {
+				m_nextKeyPressed = true;
+				ms_backspace = true;
+				m_nextKey = true;
+				return;
+			}
+
+
+			if (Input.GetKeyDown (NextKeyCode ()) || m_nextKey) {
+				m_nextKey = false;
 				m_nextKeyPressed = true;
 				ms_backspace = true;
 			} else {
