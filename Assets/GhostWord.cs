@@ -4,6 +4,7 @@ using System.Collections;
 
 public class GhostWord : MonoBehaviour {
 	[SerializeField]TextMesh m_text;
+	[SerializeField]Rigidbody2D m_rigidbody;
 
 	private string m_originalText;
 	private int m_textIndex;
@@ -60,6 +61,7 @@ public class GhostWord : MonoBehaviour {
 		m_originalText = newText;
 		m_textBlurb = textBlurb;
 		m_textIndex = textIndex;
+		this.gameObject.AddComponent <BoxCollider2D>();
 		m_text.color = new Color (1.0f, 1.0f, 1.0f, opacity);
 	}
 
@@ -81,7 +83,7 @@ public class GhostWord : MonoBehaviour {
 			float lerpTime = Random.Range (m_minLerpTime, m_maxLerpTime);
 			while (t < lerpTime) {
 				t += Time.deltaTime;
-				transform.position = Vector3.Lerp (origPosition, newPosition, t/lerpTime);
+				m_rigidbody.AddForce (Time.deltaTime* 1000.0f *(newPosition-transform.position));
 				yield return new WaitForEndOfFrame();
 			}
 

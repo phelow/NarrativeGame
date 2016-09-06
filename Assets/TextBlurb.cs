@@ -205,6 +205,7 @@ public class TextBlurb : MonoBehaviour {
 				m_curLetterTyping = 0;
 				m_curWordTyping++;
 				curGhosts--;
+				SpawnCurrentGhost ();
 				gw.FadeOut ();
 
 				Debug.Log ("Fading out, curGhosts: " + curGhosts);
@@ -240,6 +241,7 @@ public class TextBlurb : MonoBehaviour {
 			//If next char in the word is currently pressed
 			if (m_nextKeyPressed) {
 				ms_backspace = false;
+				SpawnCurrentGhost ();
 				int numLetters = UnityEngine.Mathf.Max(Random.Range (m_minGhostLetters, m_maxGhostLetters),m_ghosts.Length);
 				for(int i = 0; i < numLetters; i++){
 					Vector3 SpawnPos = new Vector3 (m_ghosts [m_curWordTyping].transform.position.x + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest) + m_ghostCharWidth *m_curLetterTyping, m_ghosts [m_curWordTyping].transform.position.y + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest), m_ghosts [m_curWordTyping].transform.position.z + Random.Range(-m_maxPositionalOffest,m_maxPositionalOffest));
@@ -295,7 +297,6 @@ public class TextBlurb : MonoBehaviour {
 			for(int i = 0; i < m_curLetterTyping; i++){
 				m_text.text += m_words[m_curWordTyping][i];
 			}
-			SpawnCurrentGhost ();
 		}
 
 		ActivateNextNode ();
