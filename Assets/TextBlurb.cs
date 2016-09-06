@@ -160,7 +160,6 @@ public class TextBlurb : MonoBehaviour {
 		float opacity = 1.0f;
 		for (int i = m_curWordTyping; i < m_curWordTyping + wordsToReveal && i < m_words.Length; i++) {
 			Vector3 newPos = new Vector3 (m_XStart+ (i%m_width * c_textCharWidth), transform.position.y - m_lineHeight *(i/m_width), transform.position.z);
-			Debug.Log ("newPos:" + newPos + " Mathf.Ceil(i/m_width):" + Mathf.Ceil(i/m_width) + "m_lineHeight: " + m_lineHeight);
 			GameObject gw = (GameObject)GameObject.Instantiate (m_ghostWord, newPos, transform.rotation);
 			gw.GetComponent<GhostWord> ().SetPosition (newPos);
 
@@ -207,8 +206,6 @@ public class TextBlurb : MonoBehaviour {
 				curGhosts--;
 				SpawnCurrentGhost ();
 				gw.FadeOut ();
-
-				Debug.Log ("Fading out, curGhosts: " + curGhosts);
 				SpawnCurrentGhost ();
 				m_text.text += " ";
 				//move onto the next word

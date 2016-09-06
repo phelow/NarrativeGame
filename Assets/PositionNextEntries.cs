@@ -16,7 +16,6 @@ public class PositionNextEntries : MonoBehaviour {
 				}
 
 				nextBlurb.transform.position = m_blurb.transform.position + new Vector3(m_blurb.GetComponentInChildren<Canvas>().pixelRect.width/10,(i+.5f)*(pixelRect.height/nextBlurbs.Length)/10 - pixelRect.height/20,0);
-				Debug.Log (m_blurb.GetComponentInChildren<Canvas>().pixelRect.size);
 				nextBlurb.GetComponent<PositionNextEntries> ().Update ();
 			}
 		}
